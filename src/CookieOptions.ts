@@ -45,4 +45,9 @@ export interface CookieOptions {
      * Can not be used in conjonction with `expires`.
      */
     maxAge?: number;
+
+    /**
+     * Set the cookie's 'SameSite' attribute to one of its 3 valid values.
+     */
+    sameSite?: 'None' | 'Lax' | 'Strict';
 }

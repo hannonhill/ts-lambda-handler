@@ -91,11 +91,12 @@ export class Response implements ProxyResult {
      * @param {CookieOptions} options Optional parameter that can be use to define additional option for the cookie.
      */
     public addCookie(key: string, value: string, options: CookieOptions = {}): this {
-        const defaults = {
+        const defaults: CookieOptions = {
             secure: true,
             httpOnly: true,
             path: '/',
-        }
+            sameSite: 'Lax'
+        };
         if (typeof options == 'object') {
             options = Object.assign({}, defaults, options);
         } else {
@@ -134,6 +135,9 @@ export class Response implements ProxyResult {
         if (options.httpOnly) {
             cookie = cookie + '; HttpOnly';
         }
+
+        if(options.sameSite)
+            cookie = cookie + '; SameSite=' + options.sameSite;
 
         return this.addHeader('set-cookie', cookie);
     }
