@@ -1,87 +1,80 @@
-import { ProxyCallback, ProxyResult } from 'aws-lambda';
-import { HttpError } from './Errors/HttpError';
-import { Buffer } from 'buffer';
-import { print_debug } from './Utilities/Functions';
-import { CookieOptions } from './CookieOptions';
-
-declare const process:any;
-
-export class Response implements ProxyResult {
-
-    constructor (protected callback: ProxyCallback) {}
-
-    public statusCode:number = 200;
-    public headers:{ [key: string] : string } = {};
-    public body:string = null;
-
-    protected _sent: boolean = undefined;
-
-    /**
-     * Indicate whatever the response has been sent.
-     * @return {boolean} [description]
-     */
-    public get sent(): boolean {
-        return this._sent;
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var buffer_1 = require("buffer");
+var Functions_1 = require("./Utilities/Functions");
+var Response = (function () {
+    function Response(callback) {
+        this.callback = callback;
+        this.statusCode = 200;
+        this.headers = {};
+        this.body = null;
+        this._sent = undefined;
     }
-
+    Object.defineProperty(Response.prototype, "sent", {
+        /**
+         * Indicate whatever the response has been sent.
+         * @return {boolean} [description]
+         */
+        get: function () {
+            return this._sent;
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * Set the status code of the response. Defaults to 200.
      * @type {number}
      * @return {this}
      */
-    public setStatusCode(status: number): this {
+    Response.prototype.setStatusCode = function (status) {
         this.statusCode = status;
         return this;
-    }
-
+    };
     /**
      * Add a header to this response.
      * @param  {string} key
      * @param  {string} value
      * @return {this}
      */
-    public addHeader(key:string, value:string): this {
+    Response.prototype.addHeader = function (key, value) {
         this.headers[key.toLowerCase()] = value;
         return this;
-    }
-
+    };
     /**
      * Add a multiple headers to the response
      * @param  { [key: string] : string } } headers
      * @return {this}
      */
-    public addHeaders(headers: { [key: string] : string }): this {
-        for(let key in headers) {
+    Response.prototype.addHeaders = function (headers) {
+        for (var key in headers) {
             this.addHeader(key, headers[key]);
         }
         return this;
-    }
-
+    };
     /**
      * Set the `cache-control` header. If the `seconds` is greater than zero, it will set the max age flag. Smaller values will set the header to `no-cache`.
      * @param  {number} value
      */
-    public setMaxAge(seconds: number): this {
+    Response.prototype.setMaxAge = function (seconds) {
         if (seconds > 0) {
-            this.addHeader('cache-control', `max-age=${seconds}`)
-        } else {
-            this.addHeader('cache-control', `no-cache`);
+            this.addHeader('cache-control', "max-age=" + seconds);
+        }
+        else {
+            this.addHeader('cache-control', "no-cache");
         }
         return this;
-    }
-
+    };
     /**
      * Remove a header from the response.
      * @param  {string} key
      * @return {this}
      */
-    public removeHeader(key: string): this {
-        if (this.headers[key] != undefined ) {
+    Response.prototype.removeHeader = function (key) {
+        if (this.headers[key] != undefined) {
             delete this.headers[key];
         }
         return this;
-    }
-
+    };
     /**
      * Set a cookie on this response. Because of a quirk in the way API Gateway Proxy Integration and Lambda work, only
      * one cookie can be set per response. Calling addCookie multiple time on the same response object will override
@@ -90,8 +83,9 @@ export class Response implements ProxyResult {
      * @param {string} value   Value to assign to the cookie.
      * @param {CookieOptions} options Optional parameter that can be use to define additional option for the cookie.
      */
-    public addCookie(key: string, value: string, options: CookieOptions = {}): this {
-        const defaults: CookieOptions = {
+    Response.prototype.addCookie = function (key, value, options) {
+        if (options === void 0) { options = {}; }
+        var defaults = {
             secure: true,
             httpOnly: true,
             path: '/',
@@ -99,56 +93,46 @@ export class Response implements ProxyResult {
         };
         if (typeof options == 'object') {
             options = Object.assign({}, defaults, options);
-        } else {
+        }
+        else {
             options = defaults;
         }
-
-        let cookie = `${key}=${value}`;
-
+        var cookie = key + "=" + value;
         if (options.domain) {
             cookie += '; domain=' + options.domain;
         }
-
         if (options.path) {
             cookie += '; path=' + options.path;
         }
-
         // If the `expires` attribute is unset and the `maxAge` attribute is.
         if (!options.expires && options.maxAge) {
             // Build a Date Object a specified number of second in the future.
             options.expires = new Date(new Date().getTime() + options.maxAge * 1000); // JS operate in Milli-seconds
         }
-
         // if Expires at is a Date object, convert it to a string.
         if (typeof options.expires == "object" && typeof options.expires.toUTCString == 'function') {
             options.expires = options.expires.toUTCString();
         }
-
         if (options.expires) {
             cookie = cookie + '; expires=' + options.expires.toString();
         }
-
         if (options.secure) {
             cookie = cookie + '; Secure';
         }
-
         if (options.httpOnly) {
             cookie = cookie + '; HttpOnly';
         }
-
-        if(options.sameSite)
+        if (options.sameSite)
             cookie = cookie + '; SameSite=' + options.sameSite;
-
         return this.addHeader('set-cookie', cookie);
-    }
-
+    };
     /**
      * Receives something and try to convert it to a string for hte body.
      * @param  {any}  body [description]
      * @return {this}      [description]
      */
-    public setBody(body: any): this {
-        const type: string = typeof body;
+    Response.prototype.setBody = function (body) {
+        var type = typeof body;
         switch (type) {
             case 'undefined':
                 this.body = null;
@@ -158,41 +142,38 @@ export class Response implements ProxyResult {
                 break;
             case 'array':
             case 'object':
-                if (body instanceof Buffer) {
+                if (body instanceof buffer_1.Buffer) {
                     this.body = body.toString('utf-8');
-                } else if (body === null) {
+                }
+                else if (body === null) {
                     this.body = null;
-                } else {
+                }
+                else {
                     this.body = JSON.stringify(body);
                 }
                 break;
             default:
                 this.body = body.toString();
         }
-
         return this;
-    }
-
+    };
     /**
      * Send the resonse back to the client.
      */
-    public send(): void {
+    Response.prototype.send = function () {
         if (this.sent) {
             throw new Error('Response has already been sent.');
         }
-
         this.callback(null, this);
         this._sent = true;
-    }
-
+    };
     /**
      * Sends a response that should cause clients to navigate to the provided URL.
      * @param {string} url [description]
      */
-    public redirect(url: string): void {
+    Response.prototype.redirect = function (url) {
         this.addHeader('location', url).setStatusCode(302).setBody("").send();
-    }
-
+    };
     /**
      * Send a failed response to the client. This method can be used to send both expected and unexpected errors.
      *
@@ -207,22 +188,21 @@ export class Response implements ProxyResult {
      * Server Error response.
      * @param {any} error
      */
-    public fail(error:any): void {
-        print_debug(error);
-
+    Response.prototype.fail = function (error) {
+        Functions_1.print_debug(error);
         if (this.sent) {
             throw new Error('Response has already been sent.');
         }
-
         if (error.passthrough) {
             this.statusCode = error.statusCode;
             this.setBody(error.body ? error.body : null);
             this.callback(null, this);
-        } else {
+        }
+        else {
             this.callback(error);
         }
-
         this._sent = true;
-    }
-
-}
+    };
+    return Response;
+}());
+exports.Response = Response;

@@ -58,6 +58,9 @@
     "ts-node": "^3.2.0",
     "typescript": "^2.4.1"
   },
+  "files": [
+      "dist"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/syrp-nz/ts-lambda-handler.git"
