@@ -5,11 +5,10 @@
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "lib": ["es6", "dom"],
-        "mapRoot": "./src",
         "module": "commonjs",
         "moduleResolution": "node",
         "outDir": "./dist",
-        "sourceMap": true,
+        "sourceMap": false,
         "target": "es5",
         "typeRoots": [
             "./node_modules/@types"
