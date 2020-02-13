@@ -41,3 +41,16 @@ class HelloWorld extends LambdaHandler.Handlers.AbstractHandler {
 export let handler = new HelloWorld().handle;
 
 ```
+
+# Steps taken to allow this project to be loaded from github via npm (instead of npm.org):
+* Disabled source maps in local tsconfig.json by removing `mapRoot` property and setting `sourceMaps` to `false`
+* Added `"files": ["dist"]` to local package.json so that npm would download the `dist` directory when pulling from github
+* Built this project using `npm compile`
+* Pushed `dist` directory (and other local config changes) to github
+
+# To use this library from another npm project:
+* Update package.json inside the project in which you want to use ts-lambda-handler so that the ts-lambda-handler package "ref" says:
+`"ts-lambda-handler": "github:hannonhill/ts-lambda-handler"`
+* Run `npm install` in the project which uses this fork.
+
+
