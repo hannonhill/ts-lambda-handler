@@ -1,8 +1,8 @@
 import {APIGatewayEvent} from 'aws-lambda';
-import { BadRequestError, ValidationError } from './Errors';
+import {BadRequestError, ValidationError} from './Errors';
 import Url = require('url');
 import * as JOI from 'joi';
-import { HttpVerb, ObjectMap } from './Types';
+import {HttpVerb, ObjectMap} from './Types';
 import * as Cookie from 'cookie';
 
 /**
@@ -17,7 +17,7 @@ export class Request {
     /**
      * Working variable to contain cookies. Get instanciated on the first call to `getCookies()`.
      */
-    private cookies: ObjectMap<string> ;
+    private cookies: ObjectMap<string>;
 
     /**
      * Contains the original event data without any of the normalisation.
@@ -28,22 +28,24 @@ export class Request {
      * Initialize the request from a APIGatewayEvent.
      * @param  {APIGatewayEvent} event APIGatewayEvent received from AWS Lambda
      */
-    constructor(protected event: APIGatewayEvent) {
+    constructor(protected event?: APIGatewayEvent) {
         this.originalEvent = JSON.parse(JSON.stringify(event));
 
-        // Make sure our Parameter arrays always resolve to objects
-        if (this.event.queryStringParameters == null) {
-            this.event.queryStringParameters = {};
-        }
+        if (this.event) {
+            // Make sure our Parameter arrays always resolve to objects
+            if (this.event.queryStringParameters == null) {
+                this.event.queryStringParameters = {};
+            }
 
-        if (this.event.pathParameters == null) {
-            this.event.pathParameters = {};
-        }
+            if (this.event.pathParameters == null) {
+                this.event.pathParameters = {};
+            }
 
-        // Normalize the keys for objects that should have case insensitive keys.
-        this.normalizeKeys(this.event.headers);
-        this.normalizeKeys(this.event.queryStringParameters);
-        this.normalizeKeys(this.event.pathParameters);
+            // Normalize the keys for objects that should have case insensitive keys.
+            this.normalizeKeys(this.event.headers);
+            this.normalizeKeys(this.event.queryStringParameters);
+            this.normalizeKeys(this.event.pathParameters);
+        }
     }
 
     /**
@@ -65,7 +67,7 @@ export class Request {
      * Lower case all the keys in the provided list.
      * @param {[key:string]: string}
      */
-    protected normalizeKeys(list: {[key:string]: string}): void {
+    protected normalizeKeys(list: { [key: string]: string }): void {
         for (let key in list) {
             let value = list[key];
             delete list[key];
@@ -139,7 +141,7 @@ export class Request {
      * @param  {boolean}   lcKey Whatever the key should be lowercase before trying to find the value.
      * @return {string}
      */
-    protected getValue(list: {[key:string]: string}, key: string, defaultVal: string, lcKey:boolean = true): string {
+    protected getValue(list: { [key: string]: string }, key: string, defaultVal: string, lcKey: boolean = true): string {
         if (lcKey) {
             key = key.toLowerCase();
         }
@@ -220,12 +222,12 @@ export class Request {
      * @param   {string}    type    Optional parameter to explicitely define the MIME type to use when parsing the body.
      * @return {any}
      */
-    public getParseBody(type:string = ''):any {
+    public getParseBody(type: string = ''): any {
         if (type == '') {
             type = this.getContentType();
         }
 
-        let parseBody:any = null;
+        let parseBody: any = null;
 
         switch (type) {
             case 'text/json':
@@ -253,7 +255,8 @@ export class Request {
             if (typeof data == 'object') {
                 return data;
             }
-        } catch (error) { }
+        } catch (error) {
+        }
 
         throw new ValidationError([{
             message: 'Can not parse JSON string.',

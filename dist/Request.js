@@ -19,17 +19,19 @@ var Request = (function () {
     function Request(event) {
         this.event = event;
         this.originalEvent = JSON.parse(JSON.stringify(event));
-        // Make sure our Parameter arrays always resolve to objects
-        if (this.event.queryStringParameters == null) {
-            this.event.queryStringParameters = {};
+        if (this.event) {
+            // Make sure our Parameter arrays always resolve to objects
+            if (this.event.queryStringParameters == null) {
+                this.event.queryStringParameters = {};
+            }
+            if (this.event.pathParameters == null) {
+                this.event.pathParameters = {};
+            }
+            // Normalize the keys for objects that should have case insensitive keys.
+            this.normalizeKeys(this.event.headers);
+            this.normalizeKeys(this.event.queryStringParameters);
+            this.normalizeKeys(this.event.pathParameters);
         }
-        if (this.event.pathParameters == null) {
-            this.event.pathParameters = {};
-        }
-        // Normalize the keys for objects that should have case insensitive keys.
-        this.normalizeKeys(this.event.headers);
-        this.normalizeKeys(this.event.queryStringParameters);
-        this.normalizeKeys(this.event.pathParameters);
     }
     Object.defineProperty(Request.prototype, "data", {
         /**
@@ -230,7 +232,8 @@ var Request = (function () {
                 return data;
             }
         }
-        catch (error) { }
+        catch (error) {
+        }
         throw new Errors_1.ValidationError([{
                 message: 'Can not parse JSON string.',
                 type: 'BadRequestError',

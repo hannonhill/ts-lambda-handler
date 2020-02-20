@@ -22,7 +22,7 @@ export declare class Request {
      * Initialize the request from a APIGatewayEvent.
      * @param  {APIGatewayEvent} event APIGatewayEvent received from AWS Lambda
      */
-    constructor(event: APIGatewayEvent);
+    constructor(event?: APIGatewayEvent);
     /**
      * Event data received from AWS Lambda. The keys of some parameters will have been lowercase to make it easier to
      * search for specific entries in a case insensitive way.
